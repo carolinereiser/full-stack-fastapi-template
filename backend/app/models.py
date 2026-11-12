@@ -2,6 +2,7 @@ import uuid
 from datetime import UTC, datetime
 
 from pydantic import EmailStr
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -103,6 +104,44 @@ class ItemPublic(ItemBase):
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
+
+
+class ItemShareCreate(SQLModel):
+    email: EmailStr = Field(max_length=255)
+
+
+class ItemShare(SQLModel, table=True):
+    __table_args__ = (
+        UniqueConstraint(
+            "item_id", "shared_with_user_id", name="uq_itemshare_item_recipient"
+        ),
+    )
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    item_id: uuid.UUID = Field(foreign_key="item.id", ondelete="CASCADE")
+    shared_with_user_id: uuid.UUID = Field(
+        foreign_key="user.id", ondelete="CASCADE", index=True
+    )
+    shared_by_id: uuid.UUID = Field(foreign_key="user.id", ondelete="CASCADE")
+    permission: str = Field(default="edit", max_length=255)
+    created_at: datetime = Field(default_factory=get_datetime_utc)
+
+
+class ItemSharePublic(SQLModel):
+    id: uuid.UUID
+    item_id: uuid.UUID
+    shared_with_user_id: uuid.UUID
+    shared_by_id: uuid.UUID
+    permission: str
+    created_at: datetime
+
+
+class ItemShareUserPublic(SQLModel):
+    id: uuid.UUID
+    email: EmailStr
+    full_name: str | None
+    permission: str
+    created_at: datetime
 
 
 # Generic message

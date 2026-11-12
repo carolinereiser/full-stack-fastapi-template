@@ -62,6 +62,7 @@ const AddItem = () => {
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["items"] })
+      queryClient.invalidateQueries({ queryKey: ["shared-items"] })
     },
   })
 

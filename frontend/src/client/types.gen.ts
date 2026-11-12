@@ -85,6 +85,72 @@ export type ItemPublic = {
 };
 
 /**
+ * ItemShareCreate
+ */
+export type ItemShareCreate = {
+    /**
+     * Email
+     */
+    email: string;
+};
+
+/**
+ * ItemSharePublic
+ */
+export type ItemSharePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Item Id
+     */
+    item_id: string;
+    /**
+     * Shared With User Id
+     */
+    shared_with_user_id: string;
+    /**
+     * Shared By Id
+     */
+    shared_by_id: string;
+    /**
+     * Permission
+     */
+    permission: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * ItemShareUserPublic
+ */
+export type ItemShareUserPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Full Name
+     */
+    full_name: string | null;
+    /**
+     * Permission
+     */
+    permission: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
  * ItemUpdate
  */
 export type ItemUpdate = {
@@ -830,6 +896,136 @@ export type itemsCreateItemResponses = {
 };
 
 export type itemsCreateItemResponse = itemsCreateItemResponses[keyof itemsCreateItemResponses];
+
+export type itemsReadSharedItemsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/items/shared-with-me';
+};
+
+export type itemsReadSharedItemsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type itemsReadSharedItemsError = itemsReadSharedItemsErrors[keyof itemsReadSharedItemsErrors];
+
+export type itemsReadSharedItemsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ItemsPublic;
+};
+
+export type itemsReadSharedItemsResponse = itemsReadSharedItemsResponses[keyof itemsReadSharedItemsResponses];
+
+export type itemsShareItemData = {
+    body: ItemShareCreate;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/items/{id}/share';
+};
+
+export type itemsShareItemErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type itemsShareItemError = itemsShareItemErrors[keyof itemsShareItemErrors];
+
+export type itemsShareItemResponses = {
+    /**
+     * Successful Response
+     */
+    200: ItemSharePublic;
+};
+
+export type itemsShareItemResponse = itemsShareItemResponses[keyof itemsShareItemResponses];
+
+export type itemsRevokeItemShareData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/api/v1/items/{id}/share/{user_id}';
+};
+
+export type itemsRevokeItemShareErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type itemsRevokeItemShareError = itemsRevokeItemShareErrors[keyof itemsRevokeItemShareErrors];
+
+export type itemsRevokeItemShareResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type itemsRevokeItemShareResponse = itemsRevokeItemShareResponses[keyof itemsRevokeItemShareResponses];
+
+export type itemsReadItemSharesData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/items/{id}/shares';
+};
+
+export type itemsReadItemSharesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type itemsReadItemSharesError = itemsReadItemSharesErrors[keyof itemsReadItemSharesErrors];
+
+export type itemsReadItemSharesResponses = {
+    /**
+     * Response Items-Read Item Shares
+     *
+     * Successful Response
+     */
+    200: Array<ItemShareUserPublic>;
+};
+
+export type itemsReadItemSharesResponse = itemsReadItemSharesResponses[keyof itemsReadItemSharesResponses];
 
 export type itemsDeleteItemData = {
     body?: never;

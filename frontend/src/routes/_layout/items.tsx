@@ -8,12 +8,17 @@ import { DataTable } from "@/components/Common/DataTable"
 import AddItem from "@/components/Items/AddItem"
 import { columns } from "@/components/Items/columns"
 import PendingItems from "@/components/Pending/PendingItems"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-function getItemsQueryOptions() {
+function getItemsQueryOptions(shared: boolean) {
   return {
     queryFn: async () =>
-      (await ItemsService.readItems({ query: { skip: 0, limit: 100 } })).data,
-    queryKey: ["items"],
+      (
+        await (shared
+          ? ItemsService.readSharedItems({ query: { skip: 0, limit: 100 } })
+          : ItemsService.readItems({ query: { skip: 0, limit: 100 } }))
+      ).data,
+    queryKey: shared ? ["shared-items"] : ["items"],
   }
 }
 
@@ -28,8 +33,8 @@ export const Route = createFileRoute("/_layout/items")({
   }),
 })
 
-function ItemsTableContent() {
-  const { data: items } = useSuspenseQuery(getItemsQueryOptions())
+function ItemsTableContent({ shared }: { shared: boolean }) {
+  const { data: items } = useSuspenseQuery(getItemsQueryOptions(shared))
 
   if (items.data.length === 0) {
     return (
@@ -37,8 +42,16 @@ function ItemsTableContent() {
         <div className="rounded-full bg-muted p-4 mb-4">
           <Search className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold">You don't have any items yet</h3>
-        <p className="text-muted-foreground">Add a new item to get started</p>
+        <h3 className="text-lg font-semibold">
+          {shared
+            ? "No items have been shared with you yet"
+            : "You don't have any items yet"}
+        </h3>
+        <p className="text-muted-foreground">
+          {shared
+            ? "Items others share with you will appear here"
+            : "Add a new item to get started"}
+        </p>
       </div>
     )
   }
@@ -46,10 +59,10 @@ function ItemsTableContent() {
   return <DataTable columns={columns} data={items.data} />
 }
 
-function ItemsTable() {
+function ItemsTable({ shared = false }: { shared?: boolean }) {
   return (
     <Suspense fallback={<PendingItems />}>
-      <ItemsTableContent />
+      <ItemsTableContent shared={shared} />
     </Suspense>
   )
 }
@@ -64,7 +77,18 @@ function Items() {
         </div>
         <AddItem />
       </div>
-      <ItemsTable />
+      <Tabs defaultValue="owned">
+        <TabsList aria-label="Item lists">
+          <TabsTrigger value="owned">My items</TabsTrigger>
+          <TabsTrigger value="shared">Shared with me</TabsTrigger>
+        </TabsList>
+        <TabsContent value="owned">
+          <ItemsTable />
+        </TabsContent>
+        <TabsContent value="shared">
+          <ItemsTable shared />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

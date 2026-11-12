@@ -10,14 +10,32 @@ import { columns } from "@/components/Items/columns"
 import PendingItems from "@/components/Pending/PendingItems"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+async function readAllSharedItems() {
+  const items = (
+    await ItemsService.readSharedItems({ query: { skip: 0, limit: 100 } })
+  ).data
+
+  // DataTable paginates locally, so include every API page in its input.
+  while (items.data.length < items.count) {
+    const page = (
+      await ItemsService.readSharedItems({
+        query: { skip: items.data.length, limit: 100 },
+      })
+    ).data
+    if (page.data.length === 0) break
+    items.data.push(...page.data)
+    items.count = page.count
+  }
+  return items
+}
+
 function getItemsQueryOptions(shared: boolean) {
   return {
     queryFn: async () =>
-      (
-        await (shared
-          ? ItemsService.readSharedItems({ query: { skip: 0, limit: 100 } })
-          : ItemsService.readItems({ query: { skip: 0, limit: 100 } }))
-      ).data,
+      shared
+        ? readAllSharedItems()
+        : (await ItemsService.readItems({ query: { skip: 0, limit: 100 } }))
+            .data,
     queryKey: shared ? ["shared-items"] : ["items"],
   }
 }

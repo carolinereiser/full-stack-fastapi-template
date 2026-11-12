@@ -14,6 +14,38 @@ async function screenshot(page: Page, testInfo: TestInfo, name: string) {
   await testInfo.attach(name, { path, contentType: "image/png" })
 }
 
+test("shared items beyond the first API page are reachable", async ({
+  page,
+}) => {
+  const items = Array.from({ length: 101 }, (_, index) => ({
+    id: `00000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`,
+    owner_id: "00000000-0000-0000-0001-000000000000",
+    title: `Shared boundary item ${index + 1}`,
+    description: null,
+    created_at: "2026-01-01T00:00:00Z",
+  }))
+  await page.route("**/api/v1/items/shared-with-me?*", async (route) => {
+    const query = new URL(route.request().url()).searchParams
+    const skip = Number(query.get("skip") ?? 0)
+    const limit = Number(query.get("limit") ?? 100)
+    await route.fulfill({
+      json: { data: items.slice(skip, skip + limit), count: items.length },
+    })
+  })
+  await page.goto("/items")
+  await page.getByRole("tab", { name: "Shared with me" }).click()
+  await expect(
+    page.getByText("Shared boundary item 1", { exact: true }),
+  ).toBeVisible()
+  await page.getByRole("button", { name: "Go to last page" }).click()
+  await expect(
+    page.getByText("Shared boundary item 101", { exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: "Go to next page" }),
+  ).toBeDisabled()
+})
+
 test("owners share and revoke access while recipients can only edit", async ({
   browser,
   baseURL,

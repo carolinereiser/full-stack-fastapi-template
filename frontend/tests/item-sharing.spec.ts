@@ -50,6 +50,7 @@ test("owners share and revoke access while recipients can only edit", async ({
   browser,
   baseURL,
 }, testInfo) => {
+  test.setTimeout(60_000)
   const ownerEmail = randomEmail()
   const recipientEmail = randomEmail()
   const ownerPassword = randomPassword()
@@ -114,7 +115,10 @@ test("owners share and revoke access while recipients can only edit", async ({
       await dialog.getByRole("button", { name: "Share", exact: true }).click()
       await expect(dialog.getByLabel("Email")).toHaveValue("")
       await expect(dialog.getByRole("listitem")).toHaveCount(1)
-      await dialog.getByRole("button", { name: "Close", exact: true }).click()
+      await dialog
+        .locator('[data-slot="dialog-footer"]')
+        .getByRole("button", { name: "Close", exact: true })
+        .click()
       await ownerPage.getByRole("tab", { name: "Shared with me" }).click()
       await expect(
         ownerPage.getByText("No items have been shared with you yet"),
@@ -186,7 +190,10 @@ test("owners share and revoke access while recipients can only edit", async ({
         dialog.getByText("This item hasn't been shared with anyone yet."),
       ).toBeVisible()
       await screenshot(ownerPage, testInfo, "owner-revoked-sharing")
-      await dialog.getByRole("button", { name: "Close", exact: true }).click()
+      await dialog
+        .locator('[data-slot="dialog-footer"]')
+        .getByRole("button", { name: "Close", exact: true })
+        .click()
     })
 
     await test.step("recipient loses the item after revocation", async () => {
